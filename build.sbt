@@ -14,3 +14,5 @@ libraryDependencies += "javax.xml.bind" % "jaxb-api" % "2.1"
 libraryDependencies ++= Seq(
   ws
 )
+
+libraryDependencies += "com.typesafe.play" %% "play-ahc-ws-standalone" % "1.1.3"
