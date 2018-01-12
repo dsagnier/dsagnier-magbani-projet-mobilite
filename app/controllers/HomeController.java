@@ -30,6 +30,8 @@ public class HomeController extends Controller implements WSBodyReadables, WSBod
     private String insta_accessToken = null;
     private String insta_value = null;
 
+    private static final String es_url = "http://localhost:9200";
+
     @Inject
     public HomeController(WSClient ws) {
         this.ws = ws;
@@ -44,17 +46,43 @@ public class HomeController extends Controller implements WSBodyReadables, WSBod
     public Result index() {
         if(this.insta_accessToken != null) {
             JsonNode resultUser = this.getSelfUser();
-            JsonNode resultFollow = this.getFollows();
+            JsonNode resultFollow = this.getFollows().get("_source");
 
+            System.out.println(resultFollow);
+
+            this.saveFollows();
             return ok(views.html.index.render(instagramAuthorizationCode, resultFollow));
         }
         return ok(views.html.index.render(instagramAuthorizationCode, null));
     }
 
-    // Get the information of user follows
     public JsonNode getFollows() {
+        String url = this.es_url + "/instagram/follows/" + this.insta_accessToken;
+        CompletionStage<WSResponse> response = ws.url(url).get();
+
+        // Apply Ws Request
+        CompletionStage<JsonNode> jsonPromise = response.thenApply(WSResponse::asJson);
+
+        // Return a json when completionStage is finish
+        try {
+            return jsonPromise.toCompletableFuture().get();
+        } catch(Exception e) {
+            return null;
+        }
+    }
+
+    public void saveFollows() {
+        System.out.println(this.insta_accessToken);
+        String url = this.es_url + "/instagram/follows/"+this.insta_accessToken;
+        JsonNode data = this.getApiInstaFollows();
+        CompletionStage<WSResponse> response = ws.url(url).setContentType("application/json").put(data);
+        CompletionStage<JsonNode> jsonPromise = response.thenApply(WSResponse::asJson);
+    }
+
+    // Get the information of user follows
+    public JsonNode getApiInstaFollows() {
         // Create Ws Request asynchronous
-        String url = this.instagramFollow + this.insta_accessToken.replaceAll("\"","");
+        String url = this.instagramFollow + this.insta_accessToken;
         CompletionStage<WSResponse> response = ws.url(url).get();
 
         // Apply Ws Request
@@ -71,7 +99,7 @@ public class HomeController extends Controller implements WSBodyReadables, WSBod
     // Get the information of admin profile
     public JsonNode getSelfUser() {
         // Create Ws Request asynchronous
-        String url = this.instagramSelfUser + this.insta_accessToken.replaceAll("\"","");
+        String url = this.instagramSelfUser + this.insta_accessToken;
         CompletionStage<WSResponse> response = ws.url(url).get();
 
         // Apply Ws Request
@@ -97,7 +125,7 @@ public class HomeController extends Controller implements WSBodyReadables, WSBod
 
             // Apply and return the ws request
             return response.thenApply((WSResponse resp) -> {
-                this.insta_accessToken = resp.asJson().get("access_token").toString();
+                this.insta_accessToken = resp.asJson().get("access_token").toString().replaceAll("\"","");
                 return redirect(controllers.routes.HomeController.index());
             });
         }
