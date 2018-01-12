@@ -46,11 +46,11 @@ public class HomeController extends Controller implements WSBodyReadables, WSBod
     public Result index() {
         if(this.insta_accessToken != null) {
             JsonNode resultUser = this.getSelfUser();
+            this.saveFollows();
             JsonNode resultFollow = this.getFollows().get("_source");
 
             System.out.println(resultFollow);
 
-            this.saveFollows();
             return ok(views.html.index.render(instagramAuthorizationCode, resultFollow));
         }
         return ok(views.html.index.render(instagramAuthorizationCode, null));
@@ -71,12 +71,20 @@ public class HomeController extends Controller implements WSBodyReadables, WSBod
         }
     }
 
-    public void saveFollows() {
+    public JsonNode saveFollows() {
         System.out.println(this.insta_accessToken);
         String url = this.es_url + "/instagram/follows/"+this.insta_accessToken;
+
         JsonNode data = this.getApiInstaFollows();
+
         CompletionStage<WSResponse> response = ws.url(url).setContentType("application/json").put(data);
         CompletionStage<JsonNode> jsonPromise = response.thenApply(WSResponse::asJson);
+
+        try {
+            return jsonPromise.toCompletableFuture().get();
+        } catch(Exception e) {
+            return null;
+        }
     }
 
     // Get the information of user follows
