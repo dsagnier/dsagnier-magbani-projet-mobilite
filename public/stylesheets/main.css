@@ -6,3 +6,12 @@ a.button {
     text-decoration: none;
     color: initial;
 }
+
+img {
+    width: 100%;
+}
+
+.instagram {
+    border:2px groove black;
+    padding: 0px;
+}

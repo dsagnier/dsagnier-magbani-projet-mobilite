@@ -1,16 +1,24 @@
 @(instagramUrl: String, jsonInstagram: com.fasterxml.jackson.databind.JsonNode)
 
 @main("Welcome to Play") {
-  <h1>Projet mobilite!</h1>
-  <a href="@instagramUrl" class="button">Import Instagram</a>
+  <h1>Projet mobilite</h1>
+  <div class="col-md-12">
+    <a href="@instagramUrl" class="button">Import Instagram</a>
+    <a href="#" class="button">Import Facebook</a>
+  </div>
+  <hr />
 
   @if(jsonInstagram != null) {
-    @for(follows <- jsonInstagram.get("data").elements()) {
-      <div>
-        <p>@follows.get("username")</p>
-        <img src="@follows.get("profile_picture").toString().replaceAll("\"","")"/>
-      </div>
-    }
+    <div class="instagram col-xs-6">
+      <h3>Instagram Follows</h3>
+      <hr />
+      @for(follows <- jsonInstagram.get("data").elements()) {
+        <div class="col-xs-3">
+          <img src="@follows.get("profile_picture").toString().replaceAll("\"","")"/>
+          <p>@follows.get("username").toString().replaceAll("\"","")</p>
+        </div>
+      }
+    </div>
   }
 
 }
