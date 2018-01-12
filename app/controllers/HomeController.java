@@ -56,6 +56,14 @@ public class HomeController extends Controller implements WSBodyReadables, WSBod
         return ok(views.html.index.render(instagramAuthorizationCode, null));
     }
 
+    public Result search() {
+        String search = request().getQueryString("search");
+        if(search != null) {
+            return ok(views.html.search.render(search));
+        }
+        return ok(views.html.search.render("null"));
+    }
+
     public JsonNode getFollows() {
         String url = this.es_url + "/instagram/follows/" + this.insta_accessToken;
         CompletionStage<WSResponse> response = ws.url(url).get();

@@ -12,6 +12,11 @@
     <div class="instagram col-xs-6">
       <h3>Instagram Follows</h3>
       <hr />
+      <form action="/search">
+        Search: <input type="text" name="search" value="">
+        <input type="submit" value="Search">
+      </form>
+      <hr />
       @for(follows <- jsonInstagram.get("data").elements()) {
         <div class="col-xs-3">
           <img src="@follows.get("profile_picture").toString().replaceAll("\"","")"/>
